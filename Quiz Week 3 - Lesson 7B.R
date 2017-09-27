@@ -5,43 +5,43 @@ print(dic.samples(mod, n.iter = 10000))
 
 # Q4
 mod1_string = " model {
-    for (i in 1:length(education)) {
-education[i] ~ dnorm(mu[i], prec)
-mu[i] = b0 + b[1]*income[i] + b[2]*young[i]
-}
+  for (i in 1:length(education)) {
+    education[i] ~ dnorm(mu[i], prec)
+    mu[i] = b0 + b[1]*income[i] + b[2]*young[i]
+  }
 
-b0 ~ dnorm(0.0, 1.0/1.0e6)
-for (i in 1:2) {
-  b[i] ~ dnorm(0.0, 1.0/1.0e6)
-}
+  b0 ~ dnorm(0.0, 1.0/1.0e6)
+  for (i in 1:2) {
+    b[i] ~ dnorm(0.0, 1.0/1.0e6)
+  }
 
-prec ~ dgamma(1.0/2.0, 1.0*1500.0/2.0)
-## Initial guess of variance based on overall
-## variance of education variable. Uses low prior
-## effective sample size. Technically, this is not
-## a true 'prior', but it is not very informative.
-sig2 = 1.0 / prec
-sig = sqrt(sig2)
+  prec ~ dgamma(1.0/2.0, 1.0*1500.0/2.0)
+  ## Initial guess of variance based on overall
+  ## variance of education variable. Uses low prior
+  ## effective sample size. Technically, this is not
+  ## a true 'prior', but it is not very informative.
+  sig2 = 1.0 / prec
+  sig = sqrt(sig2)
 } "
 
 mod2_string = " model {
-    for (i in 1:length(education)) {
-education[i] ~ dnorm(mu[i], prec)
-mu[i] = b0 + b[1]*income[i] + b[2]*young[i] + b[3]*income[i]*young[i]
-}
+  for (i in 1:length(education)) {
+    education[i] ~ dnorm(mu[i], prec)
+    mu[i] = b0 + b[1]*income[i] + b[2]*young[i] + b[3]*income[i]*young[i]
+  }
 
-b0 ~ dnorm(0.0, 1.0/1.0e6)
-for (i in 1:3) {
-  b[i] ~ dnorm(0.0, 1.0/1.0e6)
-}
+  b0 ~ dnorm(0.0, 1.0/1.0e6)
+  for (i in 1:3) {
+    b[i] ~ dnorm(0.0, 1.0/1.0e6)
+  }
 
-prec ~ dgamma(1.0/2.0, 1.0*1500.0/2.0)
-## Initial guess of variance based on overall
-## variance of education variable. Uses low prior
-## effective sample size. Technically, this is not
-## a true 'prior', but it is not very informative.
-sig2 = 1.0 / prec
-sig = sqrt(sig2)
+  prec ~ dgamma(1.0/2.0, 1.0*1500.0/2.0)
+  ## Initial guess of variance based on overall
+  ## variance of education variable. Uses low prior
+  ## effective sample size. Technically, this is not
+  ## a true 'prior', but it is not very informative.
+  sig2 = 1.0 / prec
+  sig = sqrt(sig2)
 } "
 
 data_jags = as.list(Anscombe[,-4])
