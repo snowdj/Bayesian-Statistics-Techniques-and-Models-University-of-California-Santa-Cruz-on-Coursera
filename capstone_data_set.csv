@@ -1,4 +1,4 @@
-Test.ID,Valve.ID,Valve.Rev,Fluid,Time.Between.Pours_hr,Plunger.Age,Coil.Age,Voltage,Tip.Type,Tip.Age,Response.Time_ms
+Test.ID,Valve.ID,Valve.Rev,Fluid,Time.Between.Pours_hr,Plunger.Age,Coil.Age,Voltage,Seal.Type,Seal.Age,Response.Time_ms
 STOT001,T1,Old,A,0,Old,Old,30,S,Old,36
 STOT001,T1,Old,A,0,Old,Old,30,S,Old,44.2
 STOT001,T1,Old,A,0,Old,Old,30,S,Old,47.4
