@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
 ## Introduction
@@ -16,20 +16,37 @@ The valve controls the flow of several fluids where the opening and closing is a
 The shutoff seal is an elastomer that is attached to the end of the solenoid plunger.
 In this project, we will determine how the seal vintage, fluid and applied coil voltage affects the valve's opening response time.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## Exploratory Data Analysis
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+The summary of the data set is
 
-```{r cars}
-summary(cars)
+```{r read in data and summary}
+library(rjags)
+library(ggplot2)
+df = read.csv('capstone_data_set.csv')
+df = df[, -c(1,2)]
+df$Voltage = as.factor(df$Voltage)
+summary(df)
+str(df)
 ```
 
-## Including Plots
+where *Valve.Rev* indicates the revision of the valve design, *Fluid* indicates the different fluids as masked factors, *Time.Between.Actuations_hr* indicates the time between valve actuations in hours, *\*.Age* indicates the age of the indicated component, *voltage* is the applied DC solenoid coil voltage, *Seal.Type* indicates the types of seal materials as masked factors, and *Response.Time_ms* is the time to open the valve in ms.
 
-You can also embed plots, for example:
+### Plots
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+The following plots show how the predictors affect the response time
+
+```{r pairs plot of data}
+library(GGally)
+# ggpairs(df, aes(color=Voltage, alpha=0.4))
+p <- ggplot(df, aes(Voltage, Response.Time_ms))
+p <- p + geom_boxplot(outlier.colour = "red", outlier.shape = 1, aes(color=Fluid))
+#p <- p + + geom_jitter(width=0.2)
+print(p)
+
+p <- ggplot(df, aes(Voltage, Response.Time_ms))
+p <- p + geom_boxplot(outlier.colour = "red", outlier.shape = 1, aes(color=Valve.Rev))
+#p <- p + + geom_jitter(width=0.2)
+print(p)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
