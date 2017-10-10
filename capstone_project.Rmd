@@ -34,19 +34,32 @@ where *Valve.Rev* indicates the revision of the valve design, *Fluid* indicates 
 
 ### Plots
 
-The following plots show how the predictors affect the response time
+In the interest of report length, we show the following two density plots that illustrate the distribution of response time, overall and grouped by voltage, respectively.
+Here, we see that the distribution of response time is right-skewed.
+A candidate mixture model of Gaussian and uniform distributions may be applicable. 
+Additionally, box plots of response time versus the other variables would show how response time varies due to the other variables in the data set.
+
 
 ```{r pairs plot of data}
-library(GGally)
-# ggpairs(df, aes(color=Voltage, alpha=0.4))
-p <- ggplot(df, aes(Voltage, Response.Time_ms))
-p <- p + geom_boxplot(outlier.colour = "red", outlier.shape = 1, aes(color=Fluid))
-#p <- p + + geom_jitter(width=0.2)
+#library(GGally)
+#ggpairs(df[,c(1,2,6,9)], aes(color=Voltage, alpha=0.4))
+
+p <- ggplot(data=df, aes(x=Response.Time_ms))
+p <- p + geom_density()
 print(p)
 
-p <- ggplot(df, aes(Voltage, Response.Time_ms))
-p <- p + geom_boxplot(outlier.colour = "red", outlier.shape = 1, aes(color=Valve.Rev))
-#p <- p + + geom_jitter(width=0.2)
+p <- ggplot(data=df, aes(x=Response.Time_ms, color=Voltage, group=Voltage))
+p <- p + geom_density()
 print(p)
+
+#p <- ggplot(df, aes(Voltage, Response.Time_ms))
+#p <- p + geom_boxplot(outlier.colour = "red", outlier.shape = 1, aes(color=Fluid))
+#p <- p + + geom_jitter(width=0.2)
+#print(p)
 ```
 
+## Modeling
+
+Here we will fit a Bayesian linear regression model with interactions.
+Then, we will see which predictors affect response time.
+Finally, we will compute the probability that the response time is less than 100 ms given Voltage from our MCMC results.
