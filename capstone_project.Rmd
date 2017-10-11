@@ -35,9 +35,8 @@ where *Valve.Rev* indicates the revision of the valve design, *Fluid* indicates 
 ### Plots
 
 In the interest of report length, we show the following two density plots that illustrate the distribution of response time, overall and grouped by voltage, respectively.
-Here, we see that the distribution of response time is right-skewed.
-A candidate mixture model of Gaussian and uniform distributions may be applicable. 
 Additionally, box plots of response time versus the other variables would show how response time varies due to the other variables in the data set.
+Here, we see that the distribution of response time is right-skewed, but we will fit a Bayesian regression model to obtain the posterior predictive distribution.
 
 
 ```{r pairs plot of data}
