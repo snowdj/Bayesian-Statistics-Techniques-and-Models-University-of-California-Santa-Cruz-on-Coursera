@@ -6,7 +6,8 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache=TRUE)
+set.seed(85)
 ```
 
 ## Introduction
@@ -27,7 +28,6 @@ df = read.csv('capstone_data_set.csv')
 df = df[, -c(1,2)]
 df$Voltage = as.factor(df$Voltage)
 summary(df)
-str(df)
 ```
 
 where *Valve.Rev* indicates the revision of the valve design, *Fluid* indicates the different fluids as masked factors, *Time.Between.Actuations_hr* indicates the time between valve actuations in hours, *\*.Age* indicates the age of the indicated component, *voltage* is the applied DC solenoid coil voltage, *Seal.Type* indicates the types of seal materials as masked factors, and *Response.Time_ms* is the time to open the valve in ms.
@@ -36,7 +36,7 @@ where *Valve.Rev* indicates the revision of the valve design, *Fluid* indicates 
 
 In the interest of report length, we show the following two density plots that illustrate the distribution of response time, overall and grouped by voltage, respectively.
 Additionally, box plots of response time versus the other variables would show how response time varies due to the other variables in the data set.
-Here, we see that the distribution of response time is right-skewed, but we will fit a Bayesian regression model to obtain the posterior predictive distribution.
+Here, we see that the distribution of response time is right-skewed, therefore we will apply a log transformation before fitting a Bayesian regression model.
 
 
 ```{r pairs plot of data}
@@ -59,6 +59,71 @@ print(p)
 
 ## Modeling
 
-Here we will fit a Bayesian linear regression model with interactions.
-Then, we will see which predictors affect response time.
+Here we will fit a Bayesian linear regression model from which we will see which predictors affect response time.
+
 Finally, we will compute the probability that the response time is less than 100 ms given Voltage from our MCMC results.
+
+```{r jags model}
+
+df$logresponse = log(df$Response.Time_ms)
+df$Response.Time_ms <- NULL
+
+# Convert all factors to numeric
+indx <-sapply(df, is.factor)
+df[indx] <- lapply(df[indx], function(x) as.numeric(x))
+
+# Make model matrix for interactions
+M = model.matrix(logresponse ~ .^2, df)
+
+mod_string = " model {
+  for (i in 1:n) {
+    y[i] ~ dnorm(mu[i], prec)
+    mu[i] = b[1]+b[2]*v.rev[i]+b[3]*fluid[i]+b[4]*time[i]+b[5]*p.age[i]+b[6]*c.age[i]+b[7]*vol[i]+b[8]*s.type[i]+b[9]*s.age[i]
+  }
+  
+  for (j in 1:m) {
+    b[j] ~ dnorm(0.0, 1.0/1.0e6)
+  }
+  
+  prec ~ dgamma(5/2.0, 2*10.0/2.0)
+  sig2 = 1.0/prec
+  sig = sqrt(sig2)
+} "
+
+data_jags = list(n=nrow(df), m=ncol(df), y=df$logresponse,
+                 v.rev=df$Valve.Rev,
+                 fluid = df$Fluid,
+                 time = df$Time.Between.Actuations_hr,
+                 p.age = df$Plunger.Age,
+                 c.age = df$Coil.Age,
+                 vol = df$Voltage,
+                 s.type = df$Seal.Type,
+                 s.age = df$Seal.Age
+                 )
+params = c("b", "sig2")
+inits = function() {
+  inits = list("b"=rnorm(ncol(df), 0, 100), "prec"=rgamma(1,1.0,1.0))
+}
+n.chains = 3
+n.burn.iter = 5000
+n.iter = 60000
+mod = jags.model(textConnection(mod_string), data=data_jags, n.chains=n.chains)
+update(mod, n.burn.iter) # burn-in
+mod_sim = coda.samples(model=mod,
+                       variable.names = params,
+                       n.iter = n.iter)
+mod_csim = do.call(rbind, mod_sim) # combine multiple chains
+#gelman.diag(mod_sim)
+#autocorr.diag(mod_sim)
+#autocorr.plot(mod_sim)
+#effectiveSize(mod_sim)
+#summary(mod_sim)
+
+```
+
+Using normal likelihood, with normal priors on the coefficients and inverse gamma prior for the variance, with tbd burn-in iterations, and tbd total iterations for the tbd chains, we get the following autocorrelation diagnostics
+
+```{r}
+autocorr.diag(mod_sim)
+```
+Here, we see that we haven't totally converged for parameters 
